@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { apiService } from '../services/apiService.ts';
 
-export type UserRole = 'manager' | 'engineer' | 'observer';
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: string;
   avatar?: string;
 }
 
@@ -20,6 +19,25 @@ interface UserContextType {
   error: string | null;
 }
 
+// Функция для преобразования роли в строку
+const mapRoleToString = (role: any): string => {
+  if (typeof role === 'string') {
+    return role.toLowerCase();
+  }
+  
+  if (typeof role === 'number') {
+    // Если роль пришла числом (enum)
+    const roleMap: { [key: number]: string } = {
+      0: 'manager',
+      1: 'engineer', 
+      2: 'observer'
+    };
+    return roleMap[role] || 'observer';
+  }
+  
+  return 'observer';
+};
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
@@ -29,20 +47,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const userData = await apiService.login({ email, password });
-      setUser(userData);
-      return true;
-    } catch (err) {
-      setError('Login failed');
-      console.error('Login error:', err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError(null);
+  try {
+    const userData = await apiService.login({ email, password });
+    
+    // Преобразуем роль в строку
+    const normalizedUser = {
+      ...userData,
+      role: mapRoleToString(userData.role)
+    };
+    
+    setUser(normalizedUser);
+    return true;
+  } catch (err) {
+    setError('Login failed');
+    console.error('Login error:', err);
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = () => {
     setUser(null);

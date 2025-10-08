@@ -46,6 +46,17 @@ public class DefectService : IDefectService
         await _context.SaveChangesAsync();
     }
 
+   public async Task<List<Defect>> GetAllDefectsAsync()
+{
+    return await _context.Defects
+        .Include(d => d.Project)
+        .Include(d => d.Phase)
+        .Include(d => d.Assignee)
+        .Include(d => d.Reporter)
+        .Include(d => d.Comments)
+        .ToListAsync();
+}
+
     public async Task<Defect?> GetDefectAsync(string id)
     {
         return await _context.Defects
@@ -55,17 +66,6 @@ public class DefectService : IDefectService
             .Include(d => d.Reporter)
             .Include(d => d.Comments)
             .FirstOrDefaultAsync(d => d.Id == id);
-    }
-
-    public async Task<List<Defect>> GetAllDefectsAsync()
-    {
-        return await _context.Defects
-            .Include(d => d.Project)
-            .Include(d => d.Phase)
-            .Include(d => d.Assignee)
-            .Include(d => d.Reporter)
-            .Include(d => d.Comments)
-            .ToListAsync();
     }
 
     public async Task<List<Defect>> GetDefectsByProjectAsync(string projectId)

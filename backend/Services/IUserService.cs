@@ -1,9 +1,6 @@
-// Services/IUserService.cs
-using Microsoft.EntityFrameworkCore;
-namespace Backend.Services;
-
 using Backend.Models;
-using Backend.Data;
+
+namespace Backend.Services;
 
 public interface IUserService
 {

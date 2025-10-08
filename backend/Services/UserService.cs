@@ -15,7 +15,6 @@ public class UserService : IUserService
 
     public async Task<User?> LoginAsync(string email, string password)
     {
-        // В реальном приложении здесь должна быть проверка хеша пароля
         // Для демо - проверяем email и пароль "password"
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == email);

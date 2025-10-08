@@ -42,7 +42,7 @@ public class ProjectService : IProjectService
     {
         return await _context.Projects
             .Include(p => p.Phases)
-            .Include(p => p.Defects)
+            // .Include(p => p.Defects)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -50,7 +50,7 @@ public class ProjectService : IProjectService
     {
         return await _context.Projects
             .Include(p => p.Phases)
-            .Include(p => p.Defects)
+            // .Include(p => p.Defects)
             .ToListAsync();
     }
 

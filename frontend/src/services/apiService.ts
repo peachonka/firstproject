@@ -220,20 +220,20 @@ class ApiService {
     });
   }
 
-  // Auth API
+ // Auth API
   async login(credentials: LoginRequest): Promise<ApiUser> {
-    return this.request<ApiUser>('/api/Auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+      return this.request<ApiUser>('/api/Auth/login', {
+          method: 'POST',
+          body: JSON.stringify(credentials),
+      });
   }
 
   async getUsers(): Promise<ApiUser[]> {
-    return this.request<ApiUser[]>('/api/Auth/users');
+      return this.request<ApiUser[]>('/api/Auth/users'); // Правильный endpoint
   }
 
   async getUser(id: string): Promise<ApiUser> {
-    return this.request<ApiUser>(`/api/Auth/users/${id}`);
+      return this.request<ApiUser>(`/api/Auth/users/${id}`);
   }
 }
 
