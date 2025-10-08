@@ -1,7 +1,9 @@
 // Services/IDefectService.cs
 using Microsoft.EntityFrameworkCore;
 namespace Backend.Services;
+
 using Backend.Models;
+using Backend.Data;
 
 public interface IDefectService
 {

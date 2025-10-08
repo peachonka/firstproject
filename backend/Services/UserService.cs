@@ -1,7 +1,8 @@
-// Services/UserService.cs
 using Microsoft.EntityFrameworkCore;
-namespace Backend.Services;
 using Backend.Models;
+using Backend.Data;
+
+namespace Backend.Services;
 
 public class UserService : IUserService
 {
@@ -15,8 +16,16 @@ public class UserService : IUserService
     public async Task<User?> LoginAsync(string email, string password)
     {
         // В реальном приложении здесь должна быть проверка хеша пароля
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == email && password == "password");
+        // Для демо - проверяем email и пароль "password"
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
+            
+        if (user != null && password == "password")
+        {
+            return user;
+        }
+        
+        return null;
     }
 
     public async Task<User?> GetUserAsync(string id)

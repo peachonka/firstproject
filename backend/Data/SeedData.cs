@@ -1,24 +1,56 @@
-using ConstructionDefectSystem.Models;
+using Backend.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace ConstructionDefectSystem.Data;
+namespace Backend.Data;
 
 public static class SeedData
 {
     public static async Task Initialize(ApplicationDbContext context)
     {
+        // Сначала очистим базу (опционально)
+        context.Users.RemoveRange(context.Users);
+        context.Projects.RemoveRange(context.Projects);
+        context.Defects.RemoveRange(context.Defects);
+        context.Comments.RemoveRange(context.Comments);
+        context.Phases.RemoveRange(context.Phases);
+        await context.SaveChangesAsync();
+
+        // Добавляем пользователей
         if (!context.Users.Any())
         {
             var users = new List<User>
             {
-                new User { Id = "1", Email = "manager@construction.ru", Name = "Анна Петрова", Role = UserRole.Manager },
-                new User { Id = "2", Email = "engineer@construction.ru", Name = "Дмитрий Иванов", Role = UserRole.Engineer },
-                new User { Id = "3", Email = "observer@construction.ru", Name = "Елена Сидорова", Role = UserRole.Observer }
+                new User 
+                { 
+                    Id = "1", 
+                    Email = "manager@construction.ru", 
+                    Name = "Анна Петрова", 
+                    Role = UserRole.Manager,
+                    Avatar = null
+                },
+                new User 
+                { 
+                    Id = "2", 
+                    Email = "engineer@construction.ru", 
+                    Name = "Дмитрий Иванов", 
+                    Role = UserRole.Engineer,
+                    Avatar = null
+                },
+                new User 
+                { 
+                    Id = "3", 
+                    Email = "observer@construction.ru", 
+                    Name = "Елена Сидорова", 
+                    Role = UserRole.Observer,
+                    Avatar = null
+                }
             };
             
             await context.Users.AddRangeAsync(users);
             await context.SaveChangesAsync();
         }
 
+        // Добавляем проекты и фазы
         if (!context.Projects.Any())
         {
             var projects = new List<Project>
@@ -78,6 +110,7 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
+        // Добавляем дефекты и комментарии
         if (!context.Defects.Any())
         {
             var defects = new List<Defect>
@@ -91,12 +124,13 @@ public static class SeedData
                     Priority = DefectPriority.High,
                     ProjectId = "1",
                     PhaseId = "1-2",
-                    AssigneeId = "2",
-                    ReporterId = "3",
+                    AssigneeId = "2", // Инженер
+                    ReporterId = "3", // Наблюдатель
                     CreatedAt = DateTime.Parse("2024-12-20T09:30:00Z"),
                     UpdatedAt = DateTime.Parse("2024-12-20T09:30:00Z"),
                     DueDate = DateTime.Parse("2024-12-25T18:00:00Z"),
-                    Attachments = new List<string>()
+                    Attachments = new List<string>(),
+                    Comments = new List<Comment>()
                 },
                 new Defect
                 {
@@ -107,8 +141,8 @@ public static class SeedData
                     Priority = DefectPriority.Critical,
                     ProjectId = "1",
                     PhaseId = "1-2",
-                    AssigneeId = "2",
-                    ReporterId = "1",
+                    AssigneeId = "2", // Инженер
+                    ReporterId = "1", // Менеджер
                     CreatedAt = DateTime.Parse("2024-12-19T14:15:00Z"),
                     UpdatedAt = DateTime.Parse("2024-12-20T11:20:00Z"),
                     DueDate = DateTime.Parse("2024-12-22T18:00:00Z"),

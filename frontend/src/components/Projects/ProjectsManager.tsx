@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Building2, Calendar, Users, MoreHorizontal } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
-import { Project } from '../../contexts/DataContext';
+import { Project } from '../../contexts/ProjectContext';
 
 export function ProjectsManager() {
   const { projects, addProject, updateProject } = useData();

@@ -1,6 +1,7 @@
 // Data/ApplicationDbContext.cs
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+namespace Backend.Data;
 
 public class ApplicationDbContext : DbContext
 {

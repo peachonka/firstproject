@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart3, Download, Calendar, TrendingUp, PieChart, Users } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 
 export function ReportsManager() {
   const { defects, projects } = useData();

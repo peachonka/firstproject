@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X, Calendar, User, Building2, MessageCircle, Send, Edit } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
-import { Defect } from '../../contexts/DataContext';
+import { Defect } from '../../contexts/ProjectContext';
 
 interface DefectDetailsProps {
   defect: Defect;

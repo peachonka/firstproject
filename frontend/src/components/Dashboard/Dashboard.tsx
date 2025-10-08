@@ -9,7 +9,7 @@ import {
   Calendar,
   Target
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 
 export function Dashboard() {

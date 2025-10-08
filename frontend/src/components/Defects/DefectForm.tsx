@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
-import { Defect, DefectStatus, DefectPriority } from '../../contexts/DataContext';
+import { Defect, DefectStatus, DefectPriority } from '../../contexts/ProjectContext';
 
 interface DefectFormProps {
   defect?: Defect;

@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Search, Filter, Download, Eye, Edit, MessageCircle } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
+import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 import { DefectForm } from './DefectForm';
 import { DefectDetails } from './DefectDetails';
-import { Defect, DefectStatus, DefectPriority } from '../../contexts/DataContext';
+import { Defect, DefectStatus, DefectPriority } from '../../contexts/ProjectContext';
 
 export function DefectsManager() {
   const { defects, projects } = useData();

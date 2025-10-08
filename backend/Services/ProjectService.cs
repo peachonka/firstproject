@@ -1,7 +1,9 @@
 // Services/ProjectService.cs
 using Microsoft.EntityFrameworkCore;
 namespace Backend.Services;
+
 using Backend.Models;
+using Backend.Data;
 
 public class ProjectService : IProjectService
 {

@@ -7,7 +7,7 @@ import { ReportsManager } from './components/Reports/ReportsManager';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { UserProvider, useUser } from './contexts/UserContext';
-import { DataProvider } from './contexts/DataContext';
+import { DataProvider } from "./contexts/ProjectContext";
 
 function AppContent() {
   const { user } = useUser();
