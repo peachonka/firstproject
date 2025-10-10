@@ -11,18 +11,25 @@ interface DefectDetailsProps {
 }
 
 export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
-  const { projects, addComment } = useData();
+  const { projects, addComment, defects } = useData(); // Добавляем defects
   const { user } = useUser();
   const [newComment, setNewComment] = useState('');
 
-  const project = projects.find(p => p.id === defect.projectId);
-  const phase = project?.phases.find(p => p.id === defect.phaseId);
+  // Находим актуальный дефект из состояния контекста
+  const currentDefect = defects.find(d => d.id === defect.id) || defect;
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const project = projects.find(p => p.id === currentDefect.projectId);
+  const phase = project?.phases.find(p => p.id === currentDefect.phaseId);
+
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() && user) {
-      addComment(defect.id, newComment.trim(), user.id, user.name);
-      setNewComment('');
+      try {
+        await addComment(currentDefect.id, newComment.trim(), user.id, user.name);
+        setNewComment('');
+      } catch (error) {
+        console.error('Failed to add comment:', error);
+      }
     }
   };
 
@@ -62,13 +69,13 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-gray-900">{defect.title}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{currentDefect.title}</h2>
             <div className="flex items-center gap-2">
-              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${statusColors[defect.status]}`}>
-                {statusLabels[defect.status]}
+              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${statusColors[currentDefect.status]}`}>
+                {statusLabels[currentDefect.status]}
               </span>
-              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${priorityColors[defect.priority]}`}>
-                {priorityLabels[defect.priority]}
+              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${priorityColors[currentDefect.priority]}`}>
+                {priorityLabels[currentDefect.priority]}
               </span>
             </div>
           </div>
@@ -98,18 +105,18 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
             <div className="lg:col-span-2 space-y-6">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Описание</h3>
-                <p className="text-gray-600 leading-relaxed">{defect.description}</p>
+                <p className="text-gray-600 leading-relaxed">{currentDefect.description}</p>
               </div>
 
               {/* Comments */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                   <MessageCircle className="w-5 h-5" />
-                  Комментарии ({defect.comments.length})
+                  Комментарии ({currentDefect.comments.length})
                 </h3>
                 
                 <div className="space-y-4 mb-4">
-                  {defect.comments.map((comment) => (
+                  {currentDefect.comments.map((comment) => (
                     <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-gray-900">{comment.userName}</span>
@@ -121,7 +128,7 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
                     </div>
                   ))}
                   
-                  {defect.comments.length === 0 && (
+                  {currentDefect.comments.length === 0 && (
                     <p className="text-gray-500 text-center py-4">Комментариев пока нет</p>
                   )}
                 </div>
@@ -170,7 +177,7 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-600">Создан:</span>
                     <span className="font-medium">
-                      {new Date(defect.createdAt).toLocaleDateString('ru-RU')}
+                      {new Date(currentDefect.createdAt).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
                   
@@ -178,31 +185,31 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-600">Изменен:</span>
                     <span className="font-medium">
-                      {new Date(defect.updatedAt).toLocaleDateString('ru-RU')}
+                      {new Date(currentDefect.updatedAt).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
                   
-                  {defect.dueDate && (
+                  {currentDefect.dueDate && (
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span className="text-gray-600">Срок:</span>
                       <span className={`font-medium ${
-                        new Date(defect.dueDate) < new Date() && defect.status !== 'closed'
+                        new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 'closed'
                           ? 'text-red-600' : 'text-gray-900'
                       }`}>
-                        {new Date(defect.dueDate).toLocaleDateString('ru-RU')}
-                        {new Date(defect.dueDate) < new Date() && defect.status !== 'closed' && ' (просрочен)'}
+                        {new Date(currentDefect.dueDate).toLocaleDateString('ru-RU')}
+                        {new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 'closed' && ' (просрочен)'}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {defect.attachments.length > 0 && (
+              {currentDefect.attachments.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-3">Вложения</h3>
                   <div className="space-y-2">
-                    {defect.attachments.map((attachment, index) => (
+                    {currentDefect.attachments.map((attachment, index) => (
                       <div key={index} className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
                         {attachment}
                       </div>

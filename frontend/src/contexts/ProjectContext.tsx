@@ -138,27 +138,43 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addComment = async (defectId: string, content: string, userId: string, userName: string) => {
-    try {
-      await apiService.addComment(defectId, { content, userId, userName });
-      // Обновляем локальное состояние
-      setDefects(prev => prev.map(defect => 
-        defect.id === defectId ? {
-          ...defect,
-          comments: [...defect.comments, {
-            id: Date.now().toString(),
-            defectId,
-            userId,
-            userName,
-            content,
-            createdAt: new Date().toISOString()
-          }]
-        } : defect
-      ));
-    } catch (err) {
-      console.error('Error adding comment:', err);
-      throw err;
-    }
-  };
+  try {
+    // Оптимистичное обновление - сразу добавляем комментарий в UI
+    const tempComment = {
+      id: `temp-${Date.now()}`,
+      defectId,
+      userId,
+      userName,
+      content,
+      createdAt: new Date().toISOString()
+    };
+
+    setDefects(prev => prev.map(defect => 
+      defect.id === defectId ? {
+        ...defect,
+        comments: [...defect.comments, tempComment]
+      } : defect
+    ));
+
+    // Отправляем запрос к API
+    await apiService.addComment(defectId, { content, userId, userName });
+
+    // После успеха обновляем данные чтобы получить правильный ID комментария
+    await refreshData();
+    
+  } catch (err) {
+    // Если ошибка - откатываем оптимистичное обновление
+    setDefects(prev => prev.map(defect => 
+      defect.id === defectId ? {
+        ...defect,
+        comments: defect.comments.filter(comment => !comment.id.startsWith('temp-'))
+      } : defect
+    ));
+    
+    console.error('Error adding comment:', err);
+    throw err;
+  }
+};
 
   const refreshData = async () => {
     await loadData();
