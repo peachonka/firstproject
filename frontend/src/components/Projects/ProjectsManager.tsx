@@ -13,15 +13,15 @@ export function ProjectsManager() {
   const canEdit = user?.role === 'manager';
 
   const statusColors = {
-    active: 'text-green-600 bg-green-50',
-    completed: 'text-blue-600 bg-blue-50',
-    paused: 'text-yellow-600 bg-yellow-50'
+    Active: 'text-green-600 bg-green-50',
+    Completed: 'text-blue-600 bg-blue-50',
+    Paused: 'text-yellow-600 bg-yellow-50'
   };
 
   const statusLabels = {
-    active: 'Активный',
-    completed: 'Завершен',
-    paused: 'Приостановлен'
+    Active: 'Активный',
+    Completed: 'Завершен',
+    Paused: 'Приостановлен'
   };
 
   return (
@@ -87,12 +87,12 @@ export function ProjectsManager() {
                     <div key={phase.id} className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">{phase.name}</span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
-                        phase.status === 'completed' ? 'bg-green-50 text-green-600' :
-                        phase.status === 'active' ? 'bg-yellow-50 text-yellow-600' :
+                        phase.status === 'Completed' ? 'bg-green-50 text-green-600' :
+                        phase.status === 'Active' ? 'bg-yellow-50 text-yellow-600' :
                         'bg-gray-50 text-gray-600'
                       }`}>
-                        {phase.status === 'completed' ? 'Завершен' :
-                         phase.status === 'active' ? 'Активный' : 'Планируется'}
+                        {phase.status === 'Completed' ? 'Завершен' :
+                         phase.status === 'Active' ? 'Активный' : 'Планируется'}
                       </span>
                     </div>
                   ))}
@@ -118,7 +118,7 @@ export function ProjectsManager() {
               addProject({
                 name: formData.get('name') as string,
                 description: formData.get('description') as string,
-                status: 'active',
+                status: 'Active',
                 startDate: formData.get('startDate') as string,
                 phases: []
               });

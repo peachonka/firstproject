@@ -18,11 +18,11 @@ export function Dashboard() {
 
   const stats = {
     totalDefects: defects.length,
-    newDefects: defects.filter(d => d.status === 'new').length,
-    inProgressDefects: defects.filter(d => d.status === 'in_progress').length,
-    completedDefects: defects.filter(d => d.status === 'closed').length,
-    criticalDefects: defects.filter(d => d.priority === 'critical').length,
-    activeProjects: projects.filter(p => p.status === 'active').length
+    newDefects: defects.filter(d => d.status === 0).length,
+    inProgressDefects: defects.filter(d => d.status === 1).length,
+    CompletedDefects: defects.filter(d => d.status === 3).length,
+    criticalDefects: defects.filter(d => d.priority === 3).length,
+    ActiveProjects: projects.filter(p => p.status === 'Active').length
   };
 
   const recentDefects = defects
@@ -38,16 +38,16 @@ export function Dashboard() {
 
   const statusColors = {
     new: 'text-blue-600 bg-blue-50',
-    in_progress: 'text-yellow-600 bg-yellow-50',
-    under_review: 'text-purple-600 bg-purple-50',
+    InProgress: 'text-yellow-600 bg-yellow-50',
+    UnderReview: 'text-purple-600 bg-purple-50',
     closed: 'text-green-600 bg-green-50',
     cancelled: 'text-gray-600 bg-gray-50'
   };
 
   const statusLabels = {
     new: 'Новый',
-    in_progress: 'В работе',
-    under_review: 'На проверке',
+    InProgress: 'В работе',
+    UnderReview: 'На проверке',
     closed: 'Закрыт',
     cancelled: 'Отменен'
   };
@@ -124,7 +124,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Закрыто</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completedDefects}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.CompletedDefects}</p>
             </div>
             <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -186,7 +186,7 @@ export function Dashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {projects.filter(p => p.status === 'active').map((project) => (
+                {projects.filter(p => p.status === 'Active').map((project) => (
                   <div key={project.id} className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                       <Building2 className="w-4 h-4 text-blue-600" />

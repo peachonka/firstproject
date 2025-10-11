@@ -68,16 +68,16 @@ export function DefectsManager() {
 
   const statusColors = {
     new: 'text-blue-600 bg-blue-50 border-blue-200',
-    in_progress: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    under_review: 'text-purple-600 bg-purple-50 border-purple-200',
+    InProgress: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+    UnderReview: 'text-purple-600 bg-purple-50 border-purple-200',
     closed: 'text-green-600 bg-green-50 border-green-200',
     cancelled: 'text-gray-600 bg-gray-50 border-gray-200'
   };
 
   const statusLabels = {
     new: 'Новый',
-    in_progress: 'В работе',
-    under_review: 'На проверке',
+    InProgress: 'В работе',
+    UnderReview: 'На проверке',
     closed: 'Закрыт',
     cancelled: 'Отменен'
   };
@@ -151,11 +151,11 @@ export function DefectsManager() {
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Все статусы</option>
-            <option value="new">Новые</option>
-            <option value="in_progress">В работе</option>
-            <option value="under_review">На проверке</option>
-            <option value="closed">Закрытые</option>
-            <option value="cancelled">Отмененные</option>
+            <option value={0}>Новые</option>
+            <option value={1}>В работе</option>
+            <option value={2}>На проверке</option>
+            <option value={3}>Закрытые</option>
+            <option value={4}>Отмененные</option>
           </select>
 
           <select
@@ -164,10 +164,10 @@ export function DefectsManager() {
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Все приоритеты</option>
-            <option value="low">Низкий</option>
-            <option value="medium">Средний</option>
-            <option value="high">Высокий</option>
-            <option value="critical">Критический</option>
+            <option value={0}>Низкий</option>
+            <option value={1}>Средний</option>
+            <option value={2}>Высокий</option>
+            <option value={3}>Критический</option>
           </select>
 
           <select
@@ -191,7 +191,7 @@ export function DefectsManager() {
       <div className="space-y-4">
         {filteredDefects.map((defect) => {
           const project = projects.find(p => p.id === defect.projectId);
-          const isOverdue = defect.dueDate && new Date(defect.dueDate) < new Date() && defect.status !== 'closed';
+          const isOverdue = defect.dueDate && new Date(defect.dueDate) < new Date() && defect.status !== 3;
           
           return (
             <div key={defect.id} className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all ${

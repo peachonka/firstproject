@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Calendar, User, Building2, MessageCircle, Send, Edit } from 'lucide-react';
+import { X, Calendar, Building2, MessageCircle, Send, Edit } from 'lucide-react';
 import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 import { Defect } from '../../contexts/ProjectContext';
+
+
 
 interface DefectDetailsProps {
   defect: Defect;
@@ -33,35 +35,35 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
     }
   };
 
-  const priorityColors = {
-    low: 'text-green-600 bg-green-50 border-green-200',
-    medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    high: 'text-orange-600 bg-orange-50 border-orange-200',
-    critical: 'text-red-600 bg-red-50 border-red-200'
-  };
-
-  const statusColors = {
-    new: 'text-blue-600 bg-blue-50 border-blue-200',
-    in_progress: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    under_review: 'text-purple-600 bg-purple-50 border-purple-200',
-    closed: 'text-green-600 bg-green-50 border-green-200',
-    cancelled: 'text-gray-600 bg-gray-50 border-gray-200'
-  };
-
   const statusLabels = {
-    new: 'Новый',
-    in_progress: 'В работе',
-    under_review: 'На проверке',
-    closed: 'Закрыт',
-    cancelled: 'Отменен'
-  };
+  0: 'Новый',
+  1: 'В работе', 
+  2: 'На проверке',
+  3: 'Закрыт',
+  4: 'Отменен'
+};
 
-  const priorityLabels = {
-    low: 'Низкий',
-    medium: 'Средний',
-    high: 'Высокий',
-    critical: 'Критический'
-  };
+const priorityLabels = {
+  0: 'Низкий',
+  1: 'Средний',
+  2: 'Высокий', 
+  3: 'Критический'
+};
+
+const statusColors = {
+  0: 'text-blue-600 bg-blue-50 border-blue-200',
+  1: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+  2: 'text-purple-600 bg-purple-50 border-purple-200',
+  3: 'text-green-600 bg-green-50 border-green-200',
+  4: 'text-gray-600 bg-gray-50 border-gray-200'
+};
+
+const priorityColors = {
+  0: 'text-green-600 bg-green-50 border-green-200',
+  1: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+  2: 'text-orange-600 bg-orange-50 border-orange-200',
+  3: 'text-red-600 bg-red-50 border-red-200'
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -194,11 +196,11 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span className="text-gray-600">Срок:</span>
                       <span className={`font-medium ${
-                        new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 'closed'
+                        new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 3
                           ? 'text-red-600' : 'text-gray-900'
                       }`}>
                         {new Date(currentDefect.dueDate).toLocaleDateString('ru-RU')}
-                        {new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 'closed' && ' (просрочен)'}
+                        {new Date(currentDefect.dueDate) < new Date() && currentDefect.status !== 3 && ' (просрочен)'}
                       </span>
                     </div>
                   )}
@@ -209,11 +211,18 @@ export function DefectDetails({ defect, onClose, onEdit }: DefectDetailsProps) {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-3">Вложения</h3>
                   <div className="space-y-2">
-                    {currentDefect.attachments.map((attachment, index) => (
-                      <div key={index} className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
-                        {attachment}
+                    {currentDefect.attachments && currentDefect.attachments.length > 0 && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="font-medium text-gray-900 mb-3">Вложения</h3>
+                        <div className="space-y-2">
+                          {currentDefect.attachments.map((attachment) => (
+                            <div key={attachment.id} className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                              {attachment.fileName}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}

@@ -2,7 +2,7 @@
 export interface CreateProjectRequest {
   name: string;
   description: string;
-  status: 'active' | 'completed' | 'paused';
+  status: 'Active' | 'Completed' | 'Paused';
   startDate: string;
   endDate?: string;
 }
@@ -10,34 +10,42 @@ export interface CreateProjectRequest {
 export interface UpdateProjectRequest {
   name?: string;
   description?: string;
-  status?: 'active' | 'completed' | 'paused';
+  status?: 'Active' | 'Completed' | 'Paused';
   startDate?: string;
   endDate?: string;
+}
+
+export interface Attachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
 }
 
 export interface CreateDefectRequest {
   title: string;
   description: string;
-  status: 'new' | 'in_progress' | 'under_review' | 'closed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 0 | 1 | 2 | 3 | 4;
+  priority: 0 | 1 | 2 | 3;
   projectId: string;
   phaseId?: string;
   assigneeId: string;
   reporterId: string;
   dueDate?: string;
-  attachments: string[];
+  attachments: Attachment[];
 }
 
 export interface UpdateDefectRequest {
   title?: string;
   description?: string;
-  status?: 'new' | 'in_progress' | 'under_review' | 'closed' | 'cancelled';
-  priority?: 'low' | 'medium' | 'high' | 'critical';
+  status?: 0 | 1 | 2 | 3 | 4;
+  priority?: 0 | 1 | 2 | 3;
   projectId?: string;
   phaseId?: string;
   assigneeId?: string;
   dueDate?: string;
-  attachments?: string[];
+  attachments?: Attachment[];
 }
 
 export interface CommentRequest {
@@ -56,7 +64,7 @@ export interface ApiProject {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'completed' | 'paused';
+  status: 'Active' | 'Completed' | 'Paused';
   startDate: string;
   endDate?: string;
   phases: ApiPhase[];
@@ -70,15 +78,15 @@ export interface ApiPhase {
   description: string;
   startDate: string;
   endDate?: string;
-  status: 'planned' | 'active' | 'completed';
+  status: 'Planned' | 'Active' | 'Completed';
 }
 
 export interface ApiDefect {
   id: string;
   title: string;
   description: string;
-  status: 'new' | 'in_progress' | 'under_review' | 'closed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 0 | 1 | 2 | 3 | 4;
+  priority: 0 | 1 | 2 | 3;
   projectId: string;
   phaseId?: string;
   assigneeId: string;
@@ -86,7 +94,7 @@ export interface ApiDefect {
   createdAt: string;
   updatedAt: string;
   dueDate?: string;
-  attachments: string[];
+  attachments: Attachment[];
   comments: ApiComment[];
 }
 
@@ -219,6 +227,37 @@ class ApiService {
       body: JSON.stringify(commentData),
     });
   }
+
+// Attachment API
+async uploadAttachment(defectId: string, file: File): Promise<Attachment> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${this.baseURL}/api/Attachments/${defectId}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+async deleteAttachment(attachmentId: string): Promise<void> {
+  return this.request<void>(`/api/Attachments/${attachmentId}`, {
+    method: 'DELETE',
+  });
+}
+
+async getDefectAttachments(defectId: string): Promise<Attachment[]> {
+  return this.request<Attachment[]>(`/api/Attachments/defect/${defectId}`);
+}
+
+getAttachmentUrl(attachmentId: string): string {
+  return `${this.baseURL}/api/Attachments/${attachmentId}`;
+}
 
  // Auth API
   async login(credentials: LoginRequest): Promise<ApiUser> {

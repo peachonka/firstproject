@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { apiService, UpdateProjectRequest, UpdateDefectRequest } from '../services/apiService';
 
-export type DefectStatus = 'new' | 'in_progress' | 'under_review' | 'closed' | 'cancelled';
-export type DefectPriority = 'low' | 'medium' | 'high' | 'critical';
+export type DefectStatus = 0 | 1 | 2 | 3 | 4;
+export type DefectPriority = 0 | 1 | 2 | 3;
 
 export interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'completed' | 'paused';
+  status: 'Active' | 'Completed' | 'Paused';
   startDate: string;
   endDate?: string;
   phases: Phase[];
@@ -21,7 +21,15 @@ export interface Phase {
   description: string;
   // startDate: string;
   // endDate?: string;
-  status: 'planned' | 'active' | 'completed';
+  status: 'Planned' | 'Active' | 'Completed';
+}
+
+export interface Attachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
 }
 
 export interface Defect {
@@ -37,7 +45,7 @@ export interface Defect {
   createdAt: string;
   updatedAt: string;
   dueDate?: string;
-  attachments: string[];
+  attachments: Attachment[];
   comments: Comment[];
 }
 
@@ -61,6 +69,8 @@ interface DataContextType {
   updateDefect: (id: string, defect: UpdateDefectRequest) => Promise<void>;
   addComment: (defectId: string, content: string, userId: string, userName: string) => Promise<void>;
   refreshData: () => Promise<void>;
+  uploadAttachment: (defectId: string, file: File) => Promise<Attachment>;
+  deleteAttachment: (attachmentId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -180,6 +190,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await loadData();
   };
 
+  const uploadAttachment = async (defectId: string, file: File): Promise<Attachment> => {
+  try {
+    const attachment = await apiService.uploadAttachment(defectId, file);
+    await refreshData();
+    return attachment; // Возвращаем attachment
+  } catch (err) {
+    console.error('Error uploading attachment:', err);
+    throw err;
+  }
+};
+
+const deleteAttachment = async (attachmentId: string) => {
+  try {
+    await apiService.deleteAttachment(attachmentId);
+    await refreshData();
+  } catch (err) {
+    console.error('Error deleting attachment:', err);
+    throw err;
+  }
+};
+
   return (
     <DataContext.Provider value={{
       projects,
@@ -191,11 +222,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addDefect,
       updateDefect,
       addComment,
-      refreshData
+      refreshData,
+      uploadAttachment,
+      deleteAttachment
     }}>
       {children}
     </DataContext.Provider>
   );
+
 }
 
 export function useData() {

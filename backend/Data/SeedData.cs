@@ -7,15 +7,16 @@ public static class SeedData
 {
     public static async Task Initialize(ApplicationDbContext context)
     {
-        // Сначала очистим базу (опционально)
+        // Сначала очистим базу
         context.Users.RemoveRange(context.Users);
         context.Projects.RemoveRange(context.Projects);
         context.Defects.RemoveRange(context.Defects);
         context.Comments.RemoveRange(context.Comments);
         context.Phases.RemoveRange(context.Phases);
+        context.Attachments.RemoveRange(context.Attachments); // Добавляем очистку вложений
         await context.SaveChangesAsync();
 
-        // Добавляем пользователей
+        // Добавляем пользователей (без изменений)
         if (!context.Users.Any())
         {
             var users = new List<User>
@@ -25,24 +26,21 @@ public static class SeedData
                     Id = "1", 
                     Email = "manager@construction.ru", 
                     Name = "Анна Петрова", 
-                    Role = UserRole.Manager,
-                    Avatar = null
+                    Role = UserRole.Manager
                 },
                 new User 
                 { 
                     Id = "2", 
                     Email = "engineer@construction.ru", 
                     Name = "Дмитрий Иванов", 
-                    Role = UserRole.Engineer,
-                    Avatar = null
+                    Role = UserRole.Engineer
                 },
                 new User 
                 { 
                     Id = "3", 
                     Email = "observer@construction.ru", 
                     Name = "Елена Сидорова", 
-                    Role = UserRole.Observer,
-                    Avatar = null
+                    Role = UserRole.Observer
                 }
             };
             
@@ -50,7 +48,7 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
-        // Добавляем проекты и фазы
+        // Добавляем проекты и фазы (без изменений)
         if (!context.Projects.Any())
         {
             var projects = new List<Project>
@@ -110,7 +108,7 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
-        // Добавляем дефекты и комментарии
+        // Добавляем дефекты и комментарии (ИСПРАВЛЯЕМ Attachments)
         if (!context.Defects.Any())
         {
             var defects = new List<Defect>
@@ -129,7 +127,7 @@ public static class SeedData
                     CreatedAt = DateTime.Parse("2024-12-20T09:30:00Z"),
                     UpdatedAt = DateTime.Parse("2024-12-20T09:30:00Z"),
                     DueDate = DateTime.Parse("2024-12-25T18:00:00Z"),
-                    Attachments = new List<string>(),
+                    Attachments = new List<Attachment>(), // Пустой список вместо List<string>
                     Comments = new List<Comment>()
                 },
                 new Defect
@@ -146,7 +144,7 @@ public static class SeedData
                     CreatedAt = DateTime.Parse("2024-12-19T14:15:00Z"),
                     UpdatedAt = DateTime.Parse("2024-12-20T11:20:00Z"),
                     DueDate = DateTime.Parse("2024-12-22T18:00:00Z"),
-                    Attachments = new List<string>(),
+                    Attachments = new List<Attachment>(), // Пустой список вместо List<string>
                     Comments = new List<Comment>
                     {
                         new Comment

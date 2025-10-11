@@ -37,29 +37,29 @@ export function ReportsManager() {
 
   const stats = useMemo(() => {
     const totalDefects = filteredDefects.length;
-    const newDefects = filteredDefects.filter(d => d.status === 'new').length;
-    const inProgressDefects = filteredDefects.filter(d => d.status === 'in_progress').length;
-    const completedDefects = filteredDefects.filter(d => d.status === 'closed').length;
+    const newDefects = filteredDefects.filter(d => d.status === 0).length;
+    const inProgressDefects = filteredDefects.filter(d => d.status === 1).length;
+    const CompletedDefects = filteredDefects.filter(d => d.status === 3).length;
     const overdueDefects = filteredDefects.filter(d => 
-      d.dueDate && new Date(d.dueDate) < new Date() && d.status !== 'closed'
+      d.dueDate && new Date(d.dueDate) < new Date() && d.status !== 3
     ).length;
     
-    const criticalDefects = filteredDefects.filter(d => d.priority === 'critical').length;
-    const highDefects = filteredDefects.filter(d => d.priority === 'high').length;
-    const mediumDefects = filteredDefects.filter(d => d.priority === 'medium').length;
-    const lowDefects = filteredDefects.filter(d => d.priority === 'low').length;
+    const criticalDefects = filteredDefects.filter(d => d.priority === 3).length;
+    const highDefects = filteredDefects.filter(d => d.priority === 2).length;
+    const mediumDefects = filteredDefects.filter(d => d.priority === 1).length;
+    const lowDefects = filteredDefects.filter(d => d.priority === 0).length;
     
     return {
       totalDefects,
       newDefects,
       inProgressDefects,
-      completedDefects,
+      CompletedDefects,
       overdueDefects,
       criticalDefects,
       highDefects,
       mediumDefects,
       lowDefects,
-      completionRate: totalDefects > 0 ? Math.round((completedDefects / totalDefects) * 100) : 0
+      completionRate: totalDefects > 0 ? Math.round((CompletedDefects / totalDefects) * 100) : 0
     };
   }, [filteredDefects]);
 
@@ -75,7 +75,7 @@ export function ReportsManager() {
             total: 0,
             new: 0,
             inProgress: 0,
-            completed: 0,
+            Completed: 0,
             critical: 0
           });
         }
@@ -84,18 +84,18 @@ export function ReportsManager() {
         stat.total++;
         
         switch (defect.status) {
-          case 'new':
+          case 0:
             stat.new++;
             break;
-          case 'in_progress':
+          case 1:
             stat.inProgress++;
             break;
-          case 'closed':
-            stat.completed++;
+          case 3:
+            stat.Completed++;
             break;
         }
         
-        if (defect.priority === 'critical') {
+        if (defect.priority === 3) {
           stat.critical++;
         }
       }
@@ -116,7 +116,7 @@ export function ReportsManager() {
       ['Всего дефектов', stats.totalDefects],
       ['Новых', stats.newDefects],
       ['В работе', stats.inProgressDefects],
-      ['Завершенных', stats.completedDefects],
+      ['Завершенных', stats.CompletedDefects],
       ['Просроченных', stats.overdueDefects],
       ['Процент завершения', `${stats.completionRate}%`],
       [''],
@@ -209,7 +209,7 @@ export function ReportsManager() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Завершено</p>
-              <p className="text-3xl font-bold text-green-600">{stats.completedDefects}</p>
+              <p className="text-3xl font-bold text-green-600">{stats.CompletedDefects}</p>
               <p className="text-sm text-gray-500">{stats.completionRate}% от общего</p>
             </div>
             <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
@@ -289,11 +289,11 @@ export function ReportsManager() {
                   <span className="text-gray-700">Завершенные</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{stats.completedDefects}</span>
+                  <span className="font-semibold">{stats.CompletedDefects}</span>
                   <div className="w-24 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${stats.totalDefects > 0 ? (stats.completedDefects / stats.totalDefects) * 100 : 0}%` }}
+                      style={{ width: `${stats.totalDefects > 0 ? (stats.CompletedDefects / stats.totalDefects) * 100 : 0}%` }}
                     ></div>
                   </div>
                 </div>
@@ -403,18 +403,18 @@ export function ReportsManager() {
                     <td className="py-4 text-gray-600">{project.total}</td>
                     <td className="py-4 text-gray-600">{project.new}</td>
                     <td className="py-4 text-gray-600">{project.inProgress}</td>
-                    <td className="py-4 text-gray-600">{project.completed}</td>
+                    <td className="py-4 text-gray-600">{project.Completed}</td>
                     <td className="py-4 text-gray-600">{project.critical}</td>
                     <td className="py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-blue-500 h-2 rounded-full" 
-                            style={{ width: `${project.total > 0 ? (project.completed / project.total) * 100 : 0}%` }}
+                            style={{ width: `${project.total > 0 ? (project.Completed / project.total) * 100 : 0}%` }}
                           ></div>
                         </div>
                         <span className="text-sm text-gray-600">
-                          {project.total > 0 ? Math.round((project.completed / project.total) * 100) : 0}%
+                          {project.total > 0 ? Math.round((project.Completed / project.total) * 100) : 0}%
                         </span>
                       </div>
                     </td>

@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Defect> Defects { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,13 +62,11 @@ public class ApplicationDbContext : DbContext
             .WithMany(p => p.Phases)
             .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
-            
-        // Конфигурация для хранения коллекций строк
-        modelBuilder.Entity<Defect>()
-            .Property(d => d.Attachments)
-            .HasConversion(
-                v => string.Join(';', v),
-                v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
-            );
+   
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.Defect)
+            .WithMany(d => d.Attachments)
+            .HasForeignKey(a => a.DefectId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

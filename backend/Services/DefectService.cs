@@ -17,9 +17,9 @@ public class DefectService : IDefectService
 
     public async Task<Defect> AddDefectAsync(Defect defect)
     {
-        defect.Id = Guid.NewGuid().ToString();
-        defect.CreatedAt = DateTime.UtcNow;
-        defect.UpdatedAt = DateTime.UtcNow;
+        // defect.Id = Guid.NewGuid().ToString();
+        // defect.CreatedAt = DateTime.UtcNow;
+        // defect.UpdatedAt = DateTime.UtcNow;
 
         _context.Defects.Add(defect);
         await _context.SaveChangesAsync();

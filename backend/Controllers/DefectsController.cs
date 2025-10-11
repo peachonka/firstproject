@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
+using System.ComponentModel.DataAnnotations;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -39,11 +40,30 @@ public class DefectsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Defect>> CreateDefect([FromBody] Defect defect)
+    [HttpPost]
+public async Task<ActionResult<Defect>> CreateDefect([FromBody] CreateDefectDto dto)
+{
+    var defect = new Defect
     {
-        var createdDefect = await _defectService.AddDefectAsync(defect);
-        return CreatedAtAction(nameof(GetDefect), new { id = createdDefect.Id }, createdDefect);
-    }
+        Id = Guid.NewGuid().ToString(),
+        Title = dto.Title,
+        Description = dto.Description,
+        Status = (DefectStatus)dto.Status,
+        Priority = (DefectPriority)dto.Priority,
+        ProjectId = dto.ProjectId,
+        PhaseId = dto.PhaseId,
+        AssigneeId = dto.AssigneeId,
+        ReporterId = dto.ReporterId,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow,
+        DueDate = dto.DueDate != null ? DateTime.Parse(dto.DueDate) : null,
+        Attachments = new List<Attachment>(),
+        Comments = new List<Comment>()
+    };
+
+    var createdDefect = await _defectService.AddDefectAsync(defect);
+    return CreatedAtAction(nameof(GetDefect), new { id = createdDefect.Id }, createdDefect);
+}
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateDefect(string id, [FromBody] Defect defect)
@@ -86,4 +106,33 @@ public class CommentRequest
     public string Content { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
+}
+
+// CreateDefectDto.cs
+public class CreateDefectDto
+{
+    [Required]
+    public string Title { get; set; } = string.Empty;
+    
+    [Required]
+    public string Description { get; set; } = string.Empty;
+    
+    [Required]
+    public int Status { get; set; }
+    
+    [Required]
+    public int Priority { get; set; }
+    
+    [Required]
+    public string ProjectId { get; set; } = string.Empty;
+    
+    public string? PhaseId { get; set; }
+    
+    [Required]
+    public string AssigneeId { get; set; } = string.Empty;
+    
+    [Required]
+    public string ReporterId { get; set; } = string.Empty;
+    
+    public string? DueDate { get; set; }
 }
