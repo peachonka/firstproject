@@ -155,3 +155,10 @@ C:\Users\User\Desktop\firstproject\backend\obj\Debug\net9.0\staticwebassets.buil
 C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Google.Apis.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Google.Apis.Auth.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Google.Apis.Core.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Google.Apis.Drive.v3.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\System.Management.dll
+C:\Users\User\Desktop\firstproject\backend\bin\Debug\net9.0\runtimes\win\lib\net7.0\System.Management.dll

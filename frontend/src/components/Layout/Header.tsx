@@ -2,10 +2,18 @@ import React from 'react';
 import { LogOut, User, Bell } from 'lucide-react';
 import { useUser } from '../../contexts/UserContext';
 
-const roleNames = {
+// Определяем тип для ролей
+type UserRole = 'manager' | 'engineer' | 'observer';
+
+const roleNames: Record<UserRole, string> = {
   manager: 'Менеджер',
   engineer: 'Инженер',
   observer: 'Наблюдатель'
+};
+
+// Функция для безопасного получения названия роли
+const getRoleName = (role: string): string => {
+  return roleNames[role as UserRole] || role;
 };
 
 export function Header() {
@@ -38,7 +46,7 @@ export function Header() {
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-600">{roleNames[user.role]}</p>
+                <p className="text-xs text-gray-600">{getRoleName(user.role)}</p>
               </div>
             </div>
 

@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 
+// Определяем тип для ролей
+type UserRole = 'manager' | 'engineer' | 'observer';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role: UserRole; // Изменяем тип на UserRole
   avatar?: string;
 }
 
@@ -42,6 +45,11 @@ const loadUserFromStorage = (): User | null => {
   return null;
 };
 
+// Функция для валидации роли
+const isValidRole = (role: string): role is UserRole => {
+  return ['manager', 'engineer', 'observer'].includes(role);
+};
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadUserFromStorage());
   const [users, setUsers] = useState<User[]>([]);
@@ -49,13 +57,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   // Функция для преобразования роли
-  const mapRoleToString = (role: any): string => {
+  const mapRoleToString = (role: any): UserRole => {
     if (typeof role === 'string') {
-      return role.toLowerCase();
+      const normalizedRole = role.toLowerCase();
+      if (isValidRole(normalizedRole)) {
+        return normalizedRole;
+      }
     }
     
     if (typeof role === 'number') {
-      const roleMap: { [key: number]: string } = {
+      const roleMap: { [key: number]: UserRole } = {
         0: 'manager',
         1: 'engineer', 
         2: 'observer'
@@ -73,7 +84,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const userData = await apiService.login({ email, password });
       
       // Преобразуем роль в строку
-      const normalizedUser = {
+      const normalizedUser: User = {
         ...userData,
         role: mapRoleToString(userData.role)
       };
@@ -101,7 +112,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const loadUsers = async () => {
       try {
         const usersData = await apiService.getUsers();
-        setUsers(usersData);
+        // Нормализуем роли для всех пользователей
+        const normalizedUsers = usersData.map(user => ({
+          ...user,
+          role: mapRoleToString(user.role)
+        }));
+        setUsers(normalizedUsers);
       } catch (err) {
         console.error('Error loading users:', err);
       }

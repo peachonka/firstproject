@@ -41,6 +41,8 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IDefectService, DefectService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
+builder.Services.AddHostedService<BackupHostedService>();
 
 // Add CORS for React app
 builder.Services.AddCors(options =>
