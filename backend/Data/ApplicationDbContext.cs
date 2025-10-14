@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Comment> Comments { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
+    public DbSet<DefectHistory> DefectHistories => Set<DefectHistory>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,11 +63,17 @@ public class ApplicationDbContext : DbContext
             .WithMany(p => p.Phases)
             .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
-   
+
         modelBuilder.Entity<Attachment>()
             .HasOne(a => a.Defect)
             .WithMany(d => d.Attachments)
             .HasForeignKey(a => a.DefectId)
             .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<DefectHistory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
     }
 }

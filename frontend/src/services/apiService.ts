@@ -59,6 +59,27 @@ export interface LoginRequest {
   password: string;
 }
 
+// Типы для истории изменений
+export interface DefectHistory {
+  id: string;
+  defectId: string;
+  fieldName: string;
+  oldValue: string;
+  newValue: string;
+  changedBy: string;
+  changedByName: string;
+  changedAt: string;
+}
+
+export interface CreateDefectHistoryRequest {
+  defectId: string;
+  fieldName: string;
+  oldValue: string;
+  newValue: string;
+  changedBy: string;
+  changedByName: string;
+}
+
 // Типы для ответов API (совместимые с вашими моделями)
 export interface ApiProject {
   id: string;
@@ -96,6 +117,7 @@ export interface ApiDefect {
   dueDate?: string;
   attachments: Attachment[];
   comments: ApiComment[];
+  history: DefectHistory[];
 }
 
 export interface ApiComment {
@@ -115,7 +137,7 @@ export interface ApiUser {
   avatar?: string;
 }
 
-const API_BASE_URL = 'http://localhost:5269'; // Замените на ваш URL
+const API_BASE_URL = 'http://localhost:5269';
 
 class ApiService {
   private baseURL: string;
@@ -135,7 +157,6 @@ class ApiService {
       ...options,
     };
 
-    // Если есть body и это объект, преобразуем в JSON
     if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
       config.body = JSON.stringify(config.body);
     }
@@ -147,7 +168,6 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Для DELETE запросов может не быть тела ответа
       if (response.status === 204) {
         return null as T;
       }
@@ -221,6 +241,7 @@ class ApiService {
     });
   }
 
+  // Comments API
   async addComment(defectId: string, commentData: CommentRequest): Promise<void> {
     return this.request<void>(`/api/Defects/${defectId}/comments`, {
       method: 'POST',
@@ -228,51 +249,63 @@ class ApiService {
     });
   }
 
-// Attachment API
-async uploadAttachment(defectId: string, file: File): Promise<Attachment> {
-  const formData = new FormData();
-  formData.append('file', file);
+  // Attachment API
+  async uploadAttachment(defectId: string, file: File): Promise<Attachment> {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  const response = await fetch(`${this.baseURL}/api/Attachments/${defectId}`, {
-    method: 'POST',
-    body: formData,
-  });
+    const response = await fetch(`${this.baseURL}/api/Attachments/${defectId}`, {
+      method: 'POST',
+      body: formData,
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   }
 
-  return await response.json();
-}
+  async deleteAttachment(attachmentId: string): Promise<void> {
+    return this.request<void>(`/api/Attachments/${attachmentId}`, {
+      method: 'DELETE',
+    });
+  }
 
-async deleteAttachment(attachmentId: string): Promise<void> {
-  return this.request<void>(`/api/Attachments/${attachmentId}`, {
-    method: 'DELETE',
-  });
-}
+  async getDefectAttachments(defectId: string): Promise<Attachment[]> {
+    return this.request<Attachment[]>(`/api/Attachments/defect/${defectId}`);
+  }
 
-async getDefectAttachments(defectId: string): Promise<Attachment[]> {
-  return this.request<Attachment[]>(`/api/Attachments/defect/${defectId}`);
-}
+  getAttachmentUrl(attachmentId: string): string {
+    return `${this.baseURL}/api/Attachments/${attachmentId}`;
+  }
 
-getAttachmentUrl(attachmentId: string): string {
-  return `${this.baseURL}/api/Attachments/${attachmentId}`;
-}
+  // History API
+  async getDefectHistory(defectId: string): Promise<DefectHistory[]> {
+    return this.request<DefectHistory[]>(`/api/Defects/${defectId}/history`);
+  }
 
- // Auth API
+  async addDefectHistory(historyData: CreateDefectHistoryRequest): Promise<void> {
+    return this.request<void>('/api/Defects/history', {
+      method: 'POST',
+      body: JSON.stringify(historyData),
+    });
+  }
+
+  // Auth API
   async login(credentials: LoginRequest): Promise<ApiUser> {
-      return this.request<ApiUser>('/api/Auth/login', {
-          method: 'POST',
-          body: JSON.stringify(credentials),
-      });
+    return this.request<ApiUser>('/api/Auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
   }
 
   async getUsers(): Promise<ApiUser[]> {
-      return this.request<ApiUser[]>('/api/Auth/users'); // Правильный endpoint
+    return this.request<ApiUser[]>('/api/Auth/users');
   }
 
   async getUser(id: string): Promise<ApiUser> {
-      return this.request<ApiUser>(`/api/Auth/users/${id}`);
+    return this.request<ApiUser>(`/api/Auth/users/${id}`);
   }
 }
 

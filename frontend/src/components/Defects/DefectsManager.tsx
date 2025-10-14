@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Filter, Download, Eye, Edit, MessageCircle } from 'lucide-react';
+import { Plus, Search, Filter, Download, Eye, Edit, MessageCircle, History } from 'lucide-react';
 import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 import { DefectForm } from './DefectForm';
 import { DefectDetails } from './DefectDetails';
+import { DefectHistoryList } from './DefectHistoryList';
 import { Defect, DefectStatus, DefectPriority } from '../../contexts/ProjectContext';
+import { apiService, DefectHistory } from '../../services/apiService';
 
 export function DefectsManager() {
   const { defects, projects } = useData();
@@ -16,9 +18,34 @@ export function DefectsManager() {
   const [statusFilter, setStatusFilter] = useState<DefectStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<DefectPriority | 'all'>('all');
   const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [showHistory, setShowHistory] = useState(false);
+  const [defectHistory, setDefectHistory] = useState<DefectHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const canEdit = user?.role !== 'observer';
   const canCreate = user?.role !== 'observer';
+
+  // Функции для преобразования числовых статусов/приоритетов в строковые ключи
+  const getStatusKey = (status: DefectStatus): string => {
+    const statusMap: Record<DefectStatus, string> = {
+      0: 'New',
+      1: 'InProgress',
+      2: 'UnderReview',
+      3: 'Closed',
+      4: 'Cancelled'
+    };
+    return statusMap[status];
+  };
+
+  const getPriorityKey = (priority: DefectPriority): string => {
+    const priorityMap: Record<DefectPriority, string> = {
+      0: 'Low',
+      1: 'Medium',
+      2: 'High',
+      3: 'Critical'
+    };
+    return priorityMap[priority];
+  };
 
   const filteredDefects = useMemo(() => {
     return defects.filter(defect => {
@@ -59,14 +86,14 @@ export function DefectsManager() {
     link.click();
   };
 
-  const priorityColors = {
+  const priorityColors: Record<string, string> = {
     low: 'text-green-600 bg-green-50 border-green-200',
     medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
     high: 'text-orange-600 bg-orange-50 border-orange-200',
     critical: 'text-red-600 bg-red-50 border-red-200'
   };
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     new: 'text-blue-600 bg-blue-50 border-blue-200',
     InProgress: 'text-yellow-600 bg-yellow-50 border-yellow-200',
     UnderReview: 'text-purple-600 bg-purple-50 border-purple-200',
@@ -74,22 +101,35 @@ export function DefectsManager() {
     cancelled: 'text-gray-600 bg-gray-50 border-gray-200'
   };
 
-  const statusLabels = {
-    new: 'Новый',
-    InProgress: 'В работе',
-    UnderReview: 'На проверке',
-    closed: 'Закрыт',
-    cancelled: 'Отменен'
+  const statusLabels: Record<DefectStatus, string> = {
+    0: 'Новый',
+    1: 'В работе',
+    2: 'На проверке',
+    3: 'Закрыт',
+    4: 'Отменен'
   };
 
-  const priorityLabels = {
-    low: 'Низкий',
-    medium: 'Средний',
-    high: 'Высокий',
-    critical: 'Критический'
+  const priorityLabels: Record<DefectPriority, string> = {
+    0: 'Низкий',
+    1: 'Средний',
+    2: 'Высокий',
+    3: 'Критический'
   };
 
-  if (selectedDefect) {
+  const loadDefectHistory = async (defectId: string) => {
+    setHistoryLoading(true);
+    try {
+      const history = await apiService.getDefectHistory(defectId);
+      setDefectHistory(history);
+      setShowHistory(true);
+    } catch (error) {
+      console.error('Error loading defect history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  if (selectedDefect && !showHistory) {
     return (
       <DefectDetails
         defect={selectedDefect}
@@ -98,7 +138,36 @@ export function DefectsManager() {
           setEditingDefect(selectedDefect);
           setSelectedDefect(null);
         } : undefined}
+        onShowHistory={() => loadDefectHistory(selectedDefect.id)}
       />
+    );
+  }
+
+  if (selectedDefect && showHistory) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <button
+              onClick={() => setShowHistory(false)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mb-4"
+            >
+              ← Назад к дефекту
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">История изменений</h1>
+            <p className="text-gray-600">Дефект: {selectedDefect.title}</p>
+          </div>
+        </div>
+
+        {historyLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-600 mt-2">Загрузка истории...</p>
+          </div>
+        ) : (
+          <DefectHistoryList history={defectHistory} />
+        )}
+      </div>
     );
   }
 
@@ -192,6 +261,8 @@ export function DefectsManager() {
         {filteredDefects.map((defect) => {
           const project = projects.find(p => p.id === defect.projectId);
           const isOverdue = defect.dueDate && new Date(defect.dueDate) < new Date() && defect.status !== 3;
+          const statusKey = getStatusKey(defect.status);
+          const priorityKey = getPriorityKey(defect.priority);
           
           return (
             <div key={defect.id} className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all ${
@@ -204,10 +275,10 @@ export function DefectsManager() {
                       <h3 className="font-semibold text-gray-900 truncate">
                         {defect.title}
                       </h3>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${statusColors[defect.status]}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${statusColors[statusKey]}`}>
                         {statusLabels[defect.status]}
                       </span>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${priorityColors[defect.priority]}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${priorityColors[priorityKey]}`}>
                         {priorityLabels[defect.priority]}
                       </span>
                     </div>
