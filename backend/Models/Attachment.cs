@@ -1,11 +1,11 @@
-// Models/Comment.cs
+// Models/Attachment.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Backend.Models;
 
-public class Comment
+public class Attachment
 {
     [Key]
     public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -15,22 +15,21 @@ public class Comment
     public string DefectId { get; set; } = string.Empty;
     
     [Required]
-    [ForeignKey("User")]
-    public string UserId { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
     
     [Required]
-    public string UserName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
     
     [Required]
-    public string Content { get; set; } = string.Empty;
+    public long Size { get; set; }
     
     [Required]
     public DateTime CreatedAt { get; set; }
     
-    // Navigation properties
+    // Добавляем свойство для хранения данных файла
+    public byte[] Data { get; set; } = Array.Empty<byte>();
+    
+    // Navigation property
     [JsonIgnore]
     public virtual Defect Defect { get; set; } = null!;
-    
-    [JsonIgnore]
-    public virtual User User { get; set; } = null!;
 }

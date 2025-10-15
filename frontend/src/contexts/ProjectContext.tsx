@@ -135,17 +135,56 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateDefect = async (id: string, updatedDefect: UpdateDefectRequest) => {
-    try {
-      await apiService.updateDefect(id, updatedDefect);
-      setDefects(prev => prev.map(defect => 
-        defect.id === id ? { ...defect, ...updatedDefect } : defect
-      ));
-    } catch (err) {
-      console.error('Error updating defect:', err);
-      throw err;
-    }
-  };
+  // contexts/ProjectContext.tsx
+const updateDefect = async (id: string, defectData: any) => {
+  try {
+    console.log('Updating defect:', id, defectData);
+    
+    // Функции для преобразования строк в числа
+    const statusMap: Record<string, number> = {
+      'new': 0,
+      'inprogress': 1,
+      'underreview': 2,
+      'closed': 3,
+      'cancelled': 4
+    };
+
+    const priorityMap: Record<string, number> = {
+      'low': 0,
+      'medium': 1,
+      'high': 2,
+      'critical': 3
+    };
+
+    // Преобразуем строковые значения в числа
+    const updateData = {
+      title: defectData.title,
+      description: defectData.description,
+      status: typeof defectData.status === 'string' 
+        ? statusMap[defectData.status.toLowerCase()] 
+        : defectData.status,
+      priority: typeof defectData.priority === 'string'
+        ? priorityMap[defectData.priority.toLowerCase()]
+        : defectData.priority,
+      projectId: defectData.projectId,
+      phaseId: defectData.phaseId || null,
+      assigneeId: defectData.assigneeId,
+      dueDate: defectData.dueDate || null
+    };
+
+    console.log('Sending update data (converted):', updateData);
+
+    await apiService.updateDefect(id, updateData);
+    
+    // Обновляем локальное состояние
+    setDefects(prev => prev.map(d => 
+      d.id === id ? { ...d, ...updateData, updatedAt: new Date().toISOString() } : d
+    ));
+  } catch (error) {
+    console.error('Error updating defect:', error);
+    throw error;
+  }
+};
 
   const addComment = async (defectId: string, content: string, userId: string, userName: string) => {
   try {

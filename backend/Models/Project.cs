@@ -1,6 +1,8 @@
 // Models/Project.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
 namespace Backend.Models;
 
 public class Project
@@ -22,6 +24,9 @@ public class Project
     
     public DateTime? EndDate { get; set; }
     
+    [JsonIgnore]
     public virtual ICollection<Phase> Phases { get; set; } = new List<Phase>();
+    
+    [JsonIgnore]
     public virtual ICollection<Defect> Defects { get; set; } = new List<Defect>();
 }

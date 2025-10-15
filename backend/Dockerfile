@@ -1,21 +1,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Копируем файлы проекта и восстанавливаем зависимости
-COPY *.csproj .
-RUN dotnet restore
+# Copy project files
+COPY ["Backend.csproj", "."]
+RUN dotnet restore "Backend.csproj"
 
-# Копируем весь код и собираем приложение
+# Copy everything else and build
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish "Backend.csproj" -c Release -o /app/publish
 
-# Финальный образ
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Создаем папку для базы данных
-RUN mkdir -p /app/data
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
 EXPOSE 8081

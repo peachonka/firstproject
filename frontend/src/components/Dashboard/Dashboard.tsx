@@ -16,6 +16,28 @@ import {
 import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 
+// Функции для преобразования статусов и приоритетов
+const getStatusLabel = (status: number): string => {
+  const statusMap: Record<number, string> = {
+    0: 'Новый',
+    1: 'В работе',
+    2: 'На проверке',
+    3: 'Закрыт',
+    4: 'Отменен'
+  };
+  return statusMap[status] || 'Неизвестно';
+};
+
+const getPriorityLabel = (priority: number): string => {
+  const priorityMap: Record<number, string> = {
+    0: 'Низкий',
+    1: 'Средний',
+    2: 'Высокий',
+    3: 'Критический'
+  };
+  return priorityMap[priority] || 'Неизвестно';
+};
+
 // Простые графики без внешних зависимостей
 const SimpleBarChart = ({ data, labels, color = '#3b82f6', title }: { data: number[], labels: string[], color?: string, title: string }) => {
   const maxValue = Math.max(...data, 1);
@@ -207,6 +229,13 @@ export function Dashboard() {
             Обзор текущего состояния проектов и дефектов
           </p>
         </div>
+        <button
+          onClick={refreshData}
+          className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Обновить
+        </button>
       </div>
 
       {/* Основные метрики */}
@@ -261,7 +290,7 @@ export function Dashboard() {
       </div>
 
       {/* Графики */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         <SimplePieChart
           data={statusDistribution}
           labels={['Новые', 'В работе', 'На проверке', 'Закрытые', 'Отмененные']}
@@ -322,7 +351,7 @@ export function Dashboard() {
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                            Критический
+                            {getPriorityLabel(defect.priority)}
                           </span>
                           {isOverdue && (
                             <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-200 text-red-900">
@@ -379,13 +408,11 @@ export function Dashboard() {
                             defect.status === 3 ? 'bg-green-100 text-green-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {defect.status === 0 ? 'Новый' :
-                             defect.status === 1 ? 'В работе' :
-                             defect.status === 3 ? 'Закрыт' : 'Отменен'}
+                            {getStatusLabel(defect.status)}
                           </span>
                           {isCritical && (
                             <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                              Критический
+                              {getPriorityLabel(defect.priority)}
                             </span>
                           )}
                         </div>
@@ -455,11 +482,6 @@ export function Dashboard() {
                       width: `${stats.totalDefects > 0 ? (stats.completedDefects / stats.totalDefects) * 100 : 0}%` 
                     }}
                   ></div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Среднее время решения</span>
-                  <span className="text-sm font-semibold text-blue-600">2.3 дня</span>
                 </div>
                 
                 <div className="flex justify-between items-center">

@@ -228,12 +228,13 @@ class ApiService {
     });
   }
 
-  async updateDefect(id: string, defectData: UpdateDefectRequest): Promise<void> {
-    return this.request<void>(`/api/Defects/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(defectData),
-    });
-  }
+  // services/apiService.ts
+async updateDefect(id: string, defectData: any): Promise<void> {
+  return this.request<void>(`/api/Defects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(defectData),
+  });
+}
 
   async deleteDefect(id: string): Promise<void> {
     return this.request<void>(`/api/Defects/${id}`, {

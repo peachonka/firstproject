@@ -26,25 +26,26 @@ public class DefectService : IDefectService
         return defect;
     }
 
-    public async Task UpdateDefectAsync(string id, Defect updatedDefect)
-    {
-        var defect = await _context.Defects.FindAsync(id);
-        if (defect == null)
-            throw new ArgumentException("Defect not found");
+    // Services/DefectService.cs
+public async Task UpdateDefectAsync(string id, Defect defect)
+{
+    var existingDefect = await _context.Defects.FindAsync(id);
+    if (existingDefect == null)
+        throw new ArgumentException($"Defect with id {id} not found");
 
-        defect.Title = updatedDefect.Title;
-        defect.Description = updatedDefect.Description;
-        defect.Status = updatedDefect.Status;
-        defect.Priority = updatedDefect.Priority;
-        defect.ProjectId = updatedDefect.ProjectId;
-        defect.PhaseId = updatedDefect.PhaseId;
-        defect.AssigneeId = updatedDefect.AssigneeId;
-        defect.DueDate = updatedDefect.DueDate;
-        defect.Attachments = updatedDefect.Attachments;
-        defect.UpdatedAt = DateTime.UtcNow;
+    // Обновляем поля
+    existingDefect.Title = defect.Title;
+    existingDefect.Description = defect.Description;
+    existingDefect.Status = defect.Status;
+    existingDefect.Priority = defect.Priority;
+    existingDefect.ProjectId = defect.ProjectId;
+    existingDefect.PhaseId = defect.PhaseId;
+    existingDefect.AssigneeId = defect.AssigneeId;
+    existingDefect.DueDate = defect.DueDate;
+    existingDefect.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
-    }
+    await _context.SaveChangesAsync();
+}
 
    public async Task<List<Defect>> GetAllDefectsAsync()
 {
@@ -54,6 +55,7 @@ public class DefectService : IDefectService
         .Include(d => d.Assignee)
         .Include(d => d.Reporter)
         .Include(d => d.Comments)
+        .Include(d => d.Attachments)
         .ToListAsync();
 }
 

@@ -71,18 +71,109 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDefect(string id, [FromBody] Defect defect)
+public async Task<IActionResult> UpdateDefect(string id, [FromBody] UpdateDefectDto dto)
+{
+    try
+    {
+        // Получаем дефект через контекст, а не через сервис
+        var existingDefect = await _context.Defects.FindAsync(id);
+        if (existingDefect == null)
+            return NotFound($"Defect with id {id} not found");
+
+        // Сохраняем изменения для истории
+        var changes = new List<(string field, string oldValue, string newValue)>();
+
+        // Обновляем только переданные поля
+        if (dto.Title != null && existingDefect.Title != dto.Title)
         {
-            try
+            changes.Add(("Title", existingDefect.Title, dto.Title));
+            existingDefect.Title = dto.Title;
+        }
+        
+        if (dto.Description != null && existingDefect.Description != dto.Description)
+        {
+            changes.Add(("Description", existingDefect.Description ?? "", dto.Description));
+            existingDefect.Description = dto.Description;
+        }
+        
+        if (dto.Status.HasValue && existingDefect.Status != (DefectStatus)dto.Status.Value)
+        {
+            changes.Add(("Status", existingDefect.Status.ToString(), ((DefectStatus)dto.Status.Value).ToString()));
+            existingDefect.Status = (DefectStatus)dto.Status.Value;
+        }
+        
+        if (dto.Priority.HasValue && existingDefect.Priority != (DefectPriority)dto.Priority.Value)
+        {
+            changes.Add(("Priority", existingDefect.Priority.ToString(), ((DefectPriority)dto.Priority.Value).ToString()));
+            existingDefect.Priority = (DefectPriority)dto.Priority.Value;
+        }
+        
+        if (dto.ProjectId != null && existingDefect.ProjectId != dto.ProjectId)
+        {
+            changes.Add(("ProjectId", existingDefect.ProjectId, dto.ProjectId));
+            existingDefect.ProjectId = dto.ProjectId;
+        }
+        
+        if (dto.PhaseId != null && existingDefect.PhaseId != dto.PhaseId)
+        {
+            changes.Add(("PhaseId", existingDefect.PhaseId ?? "", dto.PhaseId));
+            existingDefect.PhaseId = dto.PhaseId;
+        }
+        
+        if (dto.AssigneeId != null && existingDefect.AssigneeId != dto.AssigneeId)
+        {
+            changes.Add(("AssigneeId", existingDefect.AssigneeId ?? "", dto.AssigneeId));
+            existingDefect.AssigneeId = dto.AssigneeId;
+        }
+        
+        if (dto.DueDate != null)
+        {
+            var newDueDate = DateTime.Parse(dto.DueDate);
+            if (existingDefect.DueDate != newDueDate)
             {
-                await _defectService.UpdateDefectAsync(id, defect);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
+                changes.Add(("DueDate", existingDefect.DueDate?.ToString("yyyy-MM-dd") ?? "", newDueDate.ToString("yyyy-MM-dd")));
+                existingDefect.DueDate = newDueDate;
             }
         }
+
+        existingDefect.UpdatedAt = DateTime.UtcNow;
+
+        // Сохраняем изменения
+        await _context.SaveChangesAsync();
+
+        // Добавляем записи в историю изменений
+        foreach (var change in changes)
+        {
+            var history = new DefectHistory
+            {
+                Id = Guid.NewGuid().ToString(),
+                DefectId = id,
+                FieldName = change.field,
+                OldValue = change.oldValue,
+                NewValue = change.newValue,
+                ChangedBy = "current-user-id", // TODO: Замените на реального пользователя
+                ChangedByName = "Current User", // TODO: Замените на реальное имя
+                ChangedAt = DateTime.UtcNow
+            };
+            _context.DefectHistories.Add(history);
+        }
+
+        if (changes.Any())
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        return NoContent();
+    }
+    catch (DbUpdateException ex)
+    {
+        return BadRequest($"Database error: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        return BadRequest($"Error updating defect: {ex.Message}");
+    }
+}
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDefect(string id)
@@ -112,7 +203,7 @@ namespace Backend.Controllers
                 .Where(h => h.DefectId == id)
                 .OrderByDescending(h => h.ChangedAt)
                 .ToListAsync();
-            
+
             return Ok(history);
         }
 
@@ -130,10 +221,10 @@ namespace Backend.Controllers
                 ChangedByName = request.ChangedByName,
                 ChangedAt = DateTime.UtcNow
             };
-            
+
             _context.DefectHistories.Add(history);
             await _context.SaveChangesAsync();
-            
+
             return Ok();
         }
     }
@@ -149,27 +240,27 @@ namespace Backend.Controllers
     {
         [Required]
         public string Title { get; set; } = string.Empty;
-        
+
         [Required]
         public string Description { get; set; } = string.Empty;
-        
+
         [Required]
         public int Status { get; set; }
-        
+
         [Required]
         public int Priority { get; set; }
-        
+
         [Required]
         public string ProjectId { get; set; } = string.Empty;
-        
+
         public string? PhaseId { get; set; }
-        
+
         [Required]
         public string AssigneeId { get; set; } = string.Empty;
-        
+
         [Required]
         public string ReporterId { get; set; } = string.Empty;
-        
+
         public string? DueDate { get; set; }
     }
 
@@ -182,4 +273,16 @@ namespace Backend.Controllers
         public string ChangedBy { get; set; } = string.Empty;
         public string ChangedByName { get; set; } = string.Empty;
     }
+}
+
+public class UpdateDefectDto
+{
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public int? Status { get; set; }
+    public int? Priority { get; set; }
+    public string? ProjectId { get; set; }
+    public string? PhaseId { get; set; }
+    public string? AssigneeId { get; set; }
+    public string? DueDate { get; set; }
 }

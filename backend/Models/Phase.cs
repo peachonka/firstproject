@@ -1,7 +1,9 @@
 // Models/Phase.cs
-namespace Backend.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace Backend.Models;
 
 public class Phase
 {
@@ -26,6 +28,9 @@ public class Phase
     [Required]
     public PhaseStatus Status { get; set; }
     
+    [JsonIgnore]
     public virtual Project Project { get; set; } = null!;
+    
+    [JsonIgnore]
     public virtual ICollection<Defect> Defects { get; set; } = new List<Defect>();
 }

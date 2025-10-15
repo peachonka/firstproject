@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Building2, MessageCircle, Send, Edit, History } from 'lucide-react';
+import { X, Calendar, Building2, MessageCircle, Send, Edit, History, Paperclip, Download, Eye } from 'lucide-react';
 import { useData } from '../../contexts/ProjectContext';
 import { useUser } from '../../contexts/UserContext';
 import { Defect } from '../../contexts/ProjectContext';
@@ -15,11 +15,14 @@ export function DefectDetails({ defect, onClose, onEdit, onShowHistory }: Defect
   const { projects, addComment, defects } = useData();
   const { user } = useUser();
   const [newComment, setNewComment] = useState('');
+  const [selectedAttachment, setSelectedAttachment] = useState<any>(null);
 
-  // Находим актуальный дефект из состояния контекста
-  const currentDefect = defects.find(d => d.id === defect.id) || defect;
+  // Защита от undefined - находим актуальный дефект или используем переданный
+  const safeDefects = defects || [];
+  const currentDefect = safeDefects.find(d => d.id === defect.id) || defect;
+
   const project = projects.find(p => p.id === currentDefect.projectId);
-  const phase = project?.phases.find(p => p.id === currentDefect.phaseId);
+  const phase = project?.phases?.find(p => p.id === currentDefect.phaseId);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,65 @@ export function DefectDetails({ defect, onClose, onEdit, onShowHistory }: Defect
         console.error('Failed to add comment:', error);
       }
     }
+  };
+
+  const handleDownloadAttachment = async (attachment: any) => {
+    try {
+      // Предполагаем, что у вас есть endpoint для скачивания файлов
+      const response = await fetch(`/api/attachments/${attachment.id}/download`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = attachment.fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        console.error('Failed to download attachment');
+      }
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+    }
+  };
+
+  const handleViewAttachment = (attachment: any) => {
+    setSelectedAttachment(attachment);
+  };
+
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return '📄';
+      case 'doc':
+      case 'docx':
+        return '📝';
+      case 'xls':
+      case 'xlsx':
+        return '📊';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return '🖼️';
+      case 'zip':
+      case 'rar':
+        return '📦';
+      default:
+        return '📎';
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const statusLabels: Record<number, string> = {
@@ -127,6 +189,61 @@ export function DefectDetails({ defect, onClose, onEdit, onShowHistory }: Defect
                 <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
                   {currentDefect.description}
                 </p>
+              </div>
+
+              {/* Attachments Section */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                  <Paperclip className="w-5 h-5" />
+                  Вложения ({currentDefect.attachments?.length || 0})
+                </h3>
+                
+                {currentDefect.attachments && currentDefect.attachments.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {currentDefect.attachments.map((attachment) => (
+                      <div
+                        key={attachment.id}
+                        className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">
+                            {getFileIcon(attachment.fileName)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm text-gray-900 truncate">
+                              {attachment.fileName}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatFileSize(attachment.size)}
+                            </div>
+                            
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleViewAttachment(attachment)}
+                              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                              title="Просмотреть"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDownloadAttachment(attachment)}
+                              className="p-1 text-gray-400 hover:text-green-600 transition-colors"
+                              title="Скачать"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                    <Paperclip className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">Вложения отсутствуют</p>
+                  </div>
+                )}
               </div>
 
               {/* Comments */}
@@ -243,31 +360,6 @@ export function DefectDetails({ defect, onClose, onEdit, onShowHistory }: Defect
                   </div>
                 </div>
               </div>
-
-              {/* Attachments */}
-              {currentDefect.attachments && currentDefect.attachments.length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-900 mb-3">Вложения</h3>
-                  <div className="space-y-2">
-                    {currentDefect.attachments.map((attachment) => (
-                      <a
-                        key={attachment.id}
-                        href={`/api/Attachments/${attachment.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer p-2 hover:bg-blue-50 rounded transition-colors"
-                      >
-                        <div className="flex-1 truncate">
-                          {attachment.fileName}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {Math.round(attachment.size / 1024)} KB
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Quick Actions */}
               <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
